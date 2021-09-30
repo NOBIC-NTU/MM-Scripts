@@ -1,0 +1,130 @@
+
+
+import org.micromanager.MultiStagePosition;
+import org.micromanager.PositionList;
+import org.micromanager.StagePosition;
+
+/*
+ * Repopulate the Position List Manager with points from a square/rect grid.
+ */
+
+createRectGrid(int Rows,int Cols, double PitchV, double PitchH) {
+	
+	pl = new PositionList();
+	xy = mmc.getXYStageDevice();
+
+	PositionList pl = new PositionList();
+
+	// current position
+	xPos = mmc.getXPosition(xy);
+	yPos = mmc.getYPosition(xy);
+	
+	// populate pl with current list: (if wanting to append)
+	// pl = mm.positions().getPositionList();
+	// erase pl:
+	// pl.clearAllPositions();
+
+	// square grid, centered around current position
+	for (int i=0; i<Rows; i++) {
+		for (int j=0; j<Cols; j++) {
+			MultiStagePosition msp = new MultiStagePosition();
+			StagePosition s = new StagePosition();
+			s.stageName = xy;
+			s.numAxes = 2;
+			s.x = xPos + (i - Rows/2) * PitchH;
+			s.y = yPos + (j - Cols/2) * PitchV;
+			msp.add(s);
+			msp.setLabel(String.format("Pos%03d_%03d", new Object[]{i, j} ));
+			pl.addPosition(msp);
+		}
+	}
+
+	// repopulate list manager
+	mm.positions().setPositionList(pl);
+	print(String.format("Created: %dx%d, Pitch: %fx%f", new Object[]{Rows, Cols, PitchV, PitchH} ));
+}
+
+
+/*
+ * Build a simple form and call createSquareGrid(N,P) if valid entry.
+ * <"Size NxN"> <textfield>
+ * <"Pitch (um)"> <textfield>
+ *
+ */
+import javax.swing.JFrame;
+
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+import javax.swing.JPanel;
+
+import javax.swing.JOptionPane; // for popup error messages
+
+
+frame = new JFrame("Create Grid");
+
+JPanel panel = new JPanel(new BorderLayout(5, 5)); // which BorderLayout?
+
+JPanel label = new JPanel(new GridLayout(0, 1, 2, 2)); // which GridLayout?
+
+label.add(new JLabel("Rows x Columns", SwingConstants.RIGHT));
+label.add(new JLabel("Pitch (um)", SwingConstants.RIGHT));
+label.add(new JLabel("Create Grid?", SwingConstants.RIGHT));
+panel.add(label, BorderLayout.WEST);
+
+JPanel controls = new JPanel(new GridLayout(0, 2, 2, 2)); // which GridLayout?
+
+JTextField formRows = new JTextField();
+controls.add(formRows);
+JTextField formCols = new JTextField();
+controls.add(formCols);
+JTextField formPitchV = new JTextField();
+controls.add(formPitchV);
+JTextField formPitchH = new JTextField();
+controls.add(formPitchH);
+
+		int Rows;
+		int Cols;
+		double PitchV;
+		double PitchH;
+// Explicit action button to overwrite current list.
+JButton showDialogButton = new JButton("Create Grid");
+showDialogButton.addActionListener(
+	new ActionListener() {
+		actionPerformed(ActionEvent e) {
+							
+			try { Rows = Integer.parseInt(formRows.getText());	}
+			catch (NumberFormatException e) {
+				JOptionPane.showMessageDialog(frame, "Rows is not integer: " + formRows.getText(), "Input error", JOptionPane.ERROR_MESSAGE);
+				 return;
+			}		
+			try { Cols = Integer.parseInt(formCols.getText());	}
+			catch (NumberFormatException e) {
+				JOptionPane.showMessageDialog(frame, "Cols is not integer: " + formCols.getText(), "Input error", JOptionPane.ERROR_MESSAGE);
+				 return;
+			}
+			try { PitchV = Double.parseDouble(formPitchV.getText());	}
+			catch (NumberFormatException e) {
+				JOptionPane.showMessageDialog(frame, "PitchV is not a number (float): " + formPitchV.getText(), "Input error", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+			try { PitchH = Double.parseDouble(formPitchH.getText());	}
+			catch (NumberFormatException e) {
+				JOptionPane.showMessageDialog(frame, "PitchH is not a number (float): " + formPitchH.getText(), "Input error", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+			if (Rows * Cols > 30000 ) {
+				JOptionPane.showMessageDialog(frame, "Sorry! Number of positions exceeded arbitrary limit ("+Rows*Cols+" > 30000).", "Input error", JOptionPane.WARNING_MESSAGE);
+				return;
+			}
+			// OK make grid.
+		   createRectGrid(Rows,Cols,PitchV,PitchH);
+		}
+	}
+);
+
+controls.add(showDialogButton);
+panel.add(controls, BorderLayout.CENTER);
+
+JOptionPane.showConfirmDialog(frame, panel, "Create Grid", JOptionPane.DEFAULT_OPTION);
+			
