@@ -32,8 +32,8 @@ createRectGrid(int Rows,int Cols, double PitchV, double PitchH) {
 			StagePosition s = new StagePosition();
 			s.stageName = xy;
 			s.numAxes = 2;
-			s.x = xPos + (i - Cols/2) * PitchH;
-			s.y = yPos + (j - Rows/2) * PitchV;
+			s.x = xPos + (i - (Cols-1)/2.0) * PitchH;
+			s.y = yPos + (j - (Rows-1)/2.0) * PitchV;
 			msp.add(s);
 			msp.setLabel(String.format("P%04d_X%03d_Y%03d", new Object[]{p, i, j} ));
 			pl.addPosition(msp);
