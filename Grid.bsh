@@ -8,7 +8,7 @@ import org.micromanager.StagePosition;
  * Repopulate the Position List Manager with points from a square/rect grid.
  */
 
-createRectGrid(int Rows,int Cols, double PitchV, double PitchH, int GridPos, int WalkOrder) {
+createRectGrid(int Rows,int Cols, double PitchV, double PitchH, int GridPos) {
 
 	pl = new PositionList();
 	xy = mmc.getXYStageDevice();
@@ -18,6 +18,9 @@ createRectGrid(int Rows,int Cols, double PitchV, double PitchH, int GridPos, int
 	// current position
 	xPos = mmc.getXPosition(xy);
 	yPos = mmc.getYPosition(xy);
+	
+	
+
 	
 	// TopLeft
 	double RowStart = 0.0;
@@ -29,6 +32,7 @@ createRectGrid(int Rows,int Cols, double PitchV, double PitchH, int GridPos, int
 		ColStart = -(Cols-1)/2.0;
 	}
 
+
 	// populate pl with current list: (if wanting to append)
 	// pl = mm.positions().getPositionList();
 	// erase pl:
@@ -36,39 +40,25 @@ createRectGrid(int Rows,int Cols, double PitchV, double PitchH, int GridPos, int
 
 	// square grid, centered around current position
 	int p=0;
-
-	if (WalkOrder == 1) { // Walk Cols, then Rows
-		for (int i=0; i<Rows; i++) {
-			for (int j=0; j<Cols; j++) {
-				MultiStagePosition msp = new MultiStagePosition();
-				StagePosition s = new StagePosition();
-				s.stageName = xy;
-				s.numAxes = 2;
-				s.x = xPos + (j + ColStart) * PitchH; // Col first
-				s.y = yPos + (i + RowStart) * PitchV;
-				msp.add(s);
-				msp.setLabel(String.format("P%04d_X%03d_Y%03d", new Object[]{p, j, i} ));
-				pl.addPosition(msp);
-				p++;
-			}
-		}
-	} else { // Walk Rows, then Cols
-		for (int i=0; i<Cols; i++) {
-			for (int j=0; j<Rows; j++) {
-				MultiStagePosition msp = new MultiStagePosition();
-				StagePosition s = new StagePosition();
-				s.stageName = xy;
-				s.numAxes = 2;
-				s.y = yPos + (j + RowStart) * PitchV; // Row first
-				s.x = xPos + (i + ColStart) * PitchH; // 
-				msp.add(s);
-				msp.setLabel(String.format("P%04d_X%03d_Y%03d", new Object[]{p, i, j} ));
-				pl.addPosition(msp);
-				p++;
-			}
+	
+	// Flip X orientation: Stage X increments towards the left, but we want to walk to the right
+	// Flip Y orientation: Stage Y increments towards the top, but we want to walk downward
+	for (int i=Rows-1; i>=0; i--) {
+		for (int j=Cols-1; j>=0; j--) {
+			MultiStagePosition msp = new MultiStagePosition();
+			StagePosition s = new StagePosition();
+			s.stageName = xy;
+			s.numAxes = 2;
+			s.x = xPos + (j + ColStart) * PitchH; // Col first
+			s.y = yPos + (i + RowStart) * PitchV;
+			msp.add(s);
+			msp.setLabel(String.format("P%04d_X%03d_Y%03d", new Object[]{p, j, i} ));
+			print(String.format("P%04d_X%03d_Y%03d", new Object[]{p, j, i} ));
+			pl.addPosition(msp);
+			p++;
 		}
 	}
-	
+
 	// repopulate list manager
 	mm.positions().setPositionList(pl);
 	print(String.format("Created: %dx%d, Pitch: %fx%f", new Object[]{Rows, Cols, PitchV, PitchH} ));
@@ -116,41 +106,32 @@ public class GridToolWindow {
 		label.add(new JLabel("Columns x Rows", SwingConstants.RIGHT));
 		label.add(new JLabel("Pitch (um)", SwingConstants.RIGHT));
 		label.add(new JLabel("Reference Position", SwingConstants.RIGHT));
-		label.add(new JLabel("Walk Order", SwingConstants.RIGHT));
 		label.add(new JLabel("Create Grid?", SwingConstants.RIGHT));
 		panel.add(label, BorderLayout.WEST);
 		
 		JPanel controls = new JPanel(new GridLayout(0, 2, 2, 2)); // which GridLayout?
 				
-		JTextField formRows = new JTextField("1");
-		controls.add(formRows);
 		JTextField formCols = new JTextField("1");
 		controls.add(formCols);
-		JTextField formPitchV = new JTextField("1000");
-		controls.add(formPitchV);
+		JTextField formRows = new JTextField("1");
+		controls.add(formRows);
 		JTextField formPitchH = new JTextField("1000");
 		controls.add(formPitchH);
+		JTextField formPitchV = new JTextField("1000");
+		controls.add(formPitchV);
 		JRadioButton rbCentered = new JRadioButton("Centered", true);
 		controls.add(rbCentered);
 		JRadioButton rbTopLeft = new JRadioButton("Top-Left");
 		controls.add(rbTopLeft);
-		JRadioButton rbWalkColsRows = new JRadioButton("Cols, then Rows", true);
-		controls.add(rbWalkColsRows);
-		JRadioButton rbWalkRowsCols = new JRadioButton("Rows, then Cols");
-		controls.add(rbWalkRowsCols);
 		
 		ButtonGroup bgGridPos = new ButtonGroup();
 		bgGridPos.add(rbCentered);
 		bgGridPos.add(rbTopLeft);
-		ButtonGroup bgWalkOrder = new ButtonGroup();
-		bgWalkOrder.add(rbWalkRowsCols);
-		bgWalkOrder.add(rbWalkColsRows);
 				
 		int Rows=0;
 		int Cols=0;
 		double PitchV=0;
 		double PitchH=0;
-		int WalkOrder = 0;
 		int GridPos = 0;
 		
 		// Explicit action button to overwrite current list.
@@ -183,8 +164,7 @@ public class GridToolWindow {
 						return;
 					}
 					GridPos = rbTopLeft.isSelected() ? 1:0;
-					WalkOrder = rbWalkColsRows.isSelected() ? 1:0;
-					createRectGrid(Rows,Cols,PitchV,PitchH,GridPos,WalkOrder);
+					createRectGrid(Rows,Cols,PitchV,PitchH,GridPos);
 				}
 			}
 		);
