@@ -13,24 +13,19 @@ createRectGrid(int Rows,int Cols, double PitchV, double PitchH, int GridPos) {
 	PositionList pl = new PositionList();
 	xy = mmc.getXYStageDevice();
 
-
 	// current position
 	xPos = mmc.getXPosition(xy);
 	yPos = mmc.getYPosition(xy);
-	
-	
 
-	
 	// TopLeft
 	double RowStart = 0.0;
 	double ColStart = 0.0;
-	
+
 	if ( GridPos == 0 ) {
 		// Centered
 		RowStart = -(Rows-1)/2.0;
 		ColStart = -(Cols-1)/2.0;
 	}
-
 
 	// populate pl with current list: (if wanting to append)
 	// pl = mm.positions().getPositionList();
@@ -39,7 +34,7 @@ createRectGrid(int Rows,int Cols, double PitchV, double PitchH, int GridPos) {
 
 	// square grid, centered around current position
 	int p=0;
-	
+
 	// Flip X orientation: Stage X increments towards the left, but we want to walk to the right
 	// Flip Y orientation: Stage Y increments towards the top, but we want to walk downward
 	for (int i=Rows-1; i>=0; i--) {
@@ -81,7 +76,7 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 public class GridToolWindow {
-	
+
    private JFrame frame;
    private JPanel panel;
    
@@ -89,27 +84,27 @@ public class GridToolWindow {
    	// Constructor
       prepareGUI();
    }
-	
+
    public void showGUI(){
 		frame.setVisible(true);  // Show.
    }
    private void prepareGUI(){
    	// Draw window components.
    	frame = new JFrame("Create Grid");
-	
+
 		panel = new JPanel(new BorderLayout(5, 5)); // which BorderLayout?
 		panel.setBorder(new EmptyBorder(3, 3, 3, 3));
-		
+
 		JPanel label = new JPanel(new GridLayout(0, 1, 2, 2)); // which GridLayout?
-		
+
 		label.add(new JLabel("Columns x Rows", SwingConstants.RIGHT));
 		label.add(new JLabel("Pitch (um)", SwingConstants.RIGHT));
 		label.add(new JLabel("Reference Position", SwingConstants.RIGHT));
 		label.add(new JLabel("Create Grid?", SwingConstants.RIGHT));
 		panel.add(label, BorderLayout.WEST);
-		
+
 		JPanel controls = new JPanel(new GridLayout(0, 2, 2, 2)); // which GridLayout?
-				
+
 		JTextField formCols = new JTextField("1");
 		controls.add(formCols);
 		JTextField formRows = new JTextField("1");
@@ -122,17 +117,17 @@ public class GridToolWindow {
 		controls.add(rbCentered);
 		JRadioButton rbTopLeft = new JRadioButton("Top-Left");
 		controls.add(rbTopLeft);
-		
+
 		ButtonGroup bgGridPos = new ButtonGroup();
 		bgGridPos.add(rbCentered);
 		bgGridPos.add(rbTopLeft);
-				
+
 		int Rows=0;
 		int Cols=0;
 		double PitchV=0;
 		double PitchH=0;
 		int GridPos = 0;
-		
+
 		// Explicit action button to overwrite current list.
 		JButton showDialogButton = new JButton("Create Grid");
 		showDialogButton.addActionListener(
@@ -167,7 +162,7 @@ public class GridToolWindow {
 				}
 			}
 		);
-		
+
 		// Explicit action button to close the window
 		JButton hideDialogButton = new JButton("Close");
 		hideDialogButton.addActionListener(
@@ -177,12 +172,12 @@ public class GridToolWindow {
 				}
 			}
 		);
-		
-		
+
+
 		controls.add(showDialogButton);
 		controls.add(hideDialogButton);
 		panel.add(controls, BorderLayout.CENTER);
-		
+
 		// Not a modal popup, prefer a window.
 		panel.setBorder(new EmptyBorder(10, 10, 10, 10));
 		frame.add(panel);
