@@ -10,10 +10,9 @@ import org.micromanager.StagePosition;
 
 createRectGrid(int Rows,int Cols, double PitchV, double PitchH, int GridPos) {
 
-	pl = new PositionList();
+	PositionList pl = new PositionList();
 	xy = mmc.getXYStageDevice();
 
-	PositionList pl = new PositionList();
 
 	// current position
 	xPos = mmc.getXPosition(xy);
@@ -53,7 +52,7 @@ createRectGrid(int Rows,int Cols, double PitchV, double PitchH, int GridPos) {
 			s.y = yPos + (i + RowStart) * PitchV;
 			msp.add(s);
 			msp.setLabel(String.format("P%04d_X%03d_Y%03d", new Object[]{p, j, i} ));
-			print(String.format("P%04d_X%03d_Y%03d", new Object[]{p, j, i} ));
+			// print(String.format("P%04d_X%03d_Y%03d", new Object[]{p, j, i} )); // print() BUGS the beanshell/mm/java process!
 			pl.addPosition(msp);
 			p++;
 		}
